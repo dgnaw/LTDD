@@ -6,7 +6,8 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  StatusBar
+  StatusBar,
+  Alert
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,34 +16,57 @@ import ActionButton from '../components/ActionButtons';
 
 export default function LoginScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState(''); 
 
-  const isButtonActive = phoneNumber.length >= 10;
+  const rawPhoneNumber = phoneNumber.replace(/\D/g, '');
+  const isButtonActive = rawPhoneNumber.length > 0;
 
-  const validatePhoneNumber = (phone) => {
-    const regex = /^(0)(3|5|7|8|9)([0-9]{8})$/;
-    return regex.test(phone);
+  const handleTextChange = (text) => {
+    const cleaned = text.replace(/\D/g, '');
+
+    let formatted = cleaned;
+    if (cleaned.length > 6) {
+      formatted = `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 10)}`;
+    } else if (cleaned.length > 3) {
+      formatted = `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)}`;
+    }
+    setPhoneNumber(formatted);
+
+    if (cleaned.length > 0) {
+      if (cleaned[0] !== '0') {
+        setError('Số điện thoại phải bắt đầu bằng số 0');
+      } else if (cleaned.length >= 2 && !['3', '5', '7', '8', '9'].includes(cleaned[1])) {
+        setError('Đầu số không hợp lệ (VD: 03, 05, 09...)');
+      } else {
+        setError(''); 
+      }
+    } else {
+      setError(''); 
+    }
   };
 
   const handleLogin = () => {
-    if (validatePhoneNumber(phoneNumber)) {
-      console.log('Hợp lệ! Gửi API:', phoneNumber);
-    } else {
-      setErrorMessage('Số điện thoại không đúng định dạng');
-    }
-  };
+    if (error) return;
 
-  const handleChangeText = (text) => {
-    setPhoneNumber(text);
-    if (errorMessage) {
-      setErrorMessage(''); 
+    const cleaned = phoneNumber.replace(/\D/g, '');
+
+    const regex = /^(0)(3|5|7|8|9)([0-9]{8})$/;
+    
+    if (!regex.test(cleaned)) {
+      Alert.alert(
+        '', 
+        'Số điện thoại không đúng định dạng. Vui lòng nhập lại', 
+        [{ text: 'OK' }]
+      );
+      return;
     }
+
+    console.log('Validation thành công! Số chuẩn bị gửi đi:', cleaned);
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
       <Header title="Đăng nhập" />
 
       <KeyboardAvoidingView 
@@ -51,35 +75,34 @@ export default function LoginScreen() {
       >
         <View style={styles.formContainer}>
           <Text style={styles.title}>Nhập số điện thoại</Text>
-          
           <Text style={styles.description}>
             Dùng số điện thoại để đăng nhập hoặc đăng ký tài khoản tại OneHousing Pro
           </Text>
 
           <TextInput
             style={[
-                styles.input, 
-                errorMessage ? styles.inputError : null 
-            ]}
+              styles.input,
+              error ? styles.inputError : null 
+            ]} 
             placeholder="Nhập số điện thoại của bạn"
             placeholderTextColor="#bdbdbd"
             keyboardType="number-pad"
             autoFocus={true}
             selectionColor="#00bfa5"
-            value={phoneNumber}
-            onChangeText={handleChangeText} 
-            maxLength={10} 
+            value={phoneNumber}              
+            onChangeText={handleTextChange}  
+            maxLength={12}            
           />
 
-          {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
           ) : null}
 
-          <View style={{ marginTop: 20 }}> 
+          <View style={{ marginTop: error ? 10 : 30 }}> 
             <ActionButton 
-                title="Tiếp tục"
-                disabled={!isButtonActive} 
-                onPress={handleLogin}
+              title="Tiếp tục"
+              disabled={!isButtonActive} 
+              onPress={handleLogin} 
             />
           </View>
 
@@ -122,12 +145,11 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderBottomColor: 'red',
-    color: 'red'
   },
   errorText: {
     color: 'red',
-    fontSize: 12,
-    marginTop: 5,
-    marginBottom: 20, 
+    fontSize: 13,
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });

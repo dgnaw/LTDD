@@ -8,3 +8,8 @@
 
 # BT4.3 : ValidationForm
 ![Kết quả bài tập](./assets/SDT.jpg)
+
+# BT6.1: 
+![Kết quả bài tập](./assets/va1.jpg)
+![Kết quả bài tập](./assets/va2.jpg)
+![Kết quả bài tập](./assets/v3.jpg)
