@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header'
 import ActionButton from '../components/ActionButtons';
 
-export default function LoginScreen() {
+export default function LoginScreen({navigation}) {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState(''); 
 
@@ -61,7 +61,8 @@ export default function LoginScreen() {
       return;
     }
 
-    console.log('Validation thành công! Số chuẩn bị gửi đi:', cleaned);
+    console.log('Đăng nhập thành công! Chuyển trang...');
+    navigation.navigate('Home');
   };
 
   return (
